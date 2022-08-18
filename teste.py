@@ -1,23 +1,10 @@
-import xlsxwriter
-
-############ fazer leitura do arquivo e filtar #############
-workbook = xlsxwriter.Workbook('./tabela_tempo.xlsx')
-worksheet = workbook.add_worksheet()
-
-numero_agv = 3
-row = 0
-
-for agv in range(numero_agv):
-    logs = open('./TrafficWarden.txt', 'r')
-    nova_tarefa = f'[AgvNr:{agv+1}] : Encontrado tarefa:'
-
-    tag_descarga = 0
+def ler_arquivo(caminho_arquivo, numero_agv):
+    
     lt_info = []
-    lt_escrever = []
-
-    #1  '09:45:55,058' ,8    TARGET_POSITION:802, 9 TARGET_ACTION:NONE
-
-    #percorrer linha por linha e pegar informaçoes necessárias
+    nova_tarefa = f'[AgvNr:{numero_agv}] : Encontrado tarefa:'
+    
+    logs = open(caminho_arquivo, 'r')
+    
     for log in logs:
         if nova_tarefa in log:
             lista_reduzida = []
@@ -26,7 +13,13 @@ for agv in range(numero_agv):
             lista_reduzida.append(':'+log.split()[9].split(':')[1])
             lt_info.append(lista_reduzida)
     logs.close()
-
+    
+    return lt_info
+   
+def organizar_dados(lt_info):
+    tag_descarga = 0
+    lt_escrever = []
+    
     while len(lt_info) > 0:
         lt_final = []
         if len(lt_final) < 6:
@@ -69,14 +62,22 @@ for agv in range(numero_agv):
 
         if len(lt_final) == 6:
             lt_escrever.append(lt_final)
+    
+    return lt_escrever
 
-    ###### escrever arquivo ########
-    column = 0
-    worksheet.write(row, column, f'LGV{agv+1}')
-    row += 1
-
-    for linha in lt_escrever:
+def escrever_arquivo(arquivo, lista_dados):
+    import xlsxwriter
+    
+    workbook = xlsxwriter.Workbook(arquivo)
+    worksheet = workbook.add_worksheet()
+    
+    row = 0
+    
+    for linha in lista_dados:
         for index, coluna in enumerate(linha):
             worksheet.write(row, index, coluna)
+     
         row += 1
-workbook.close()
+    workbook.close()
+    
+    return print('Arquivo escrito com sucesso!')
